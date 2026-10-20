@@ -31,12 +31,12 @@ app.post('/api/register', async (req, res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = await pool.query(
-            "INSERT INTO Users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email",
+            'INSERT INTO "Users" (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email',
             [username, email, hashedPassword]
         );
         res.json({ message: "User registered successfully", user: newUser.rows[0] });
     } catch (err) {
-        console.error(err.message);
+        console.error("REGISTER ERROR:", err.message); // This will show in Render logs
         res.status(500).json({ error: "Server error or email already exists" });
     }
 });
@@ -47,7 +47,7 @@ app.post('/api/login', async (req, res) => {
         const { email, password } = req.body;
         
         // Find user by email
-        const user = await pool.query("SELECT * FROM Users WHERE email = $1", [email]);
+        const user = await pool.query('SELECT * FROM "Users" WHERE email = $1', [email]);
         if (user.rows.length === 0) return res.status(401).json({ error: "User not found" });
 
         // Check password
@@ -57,7 +57,7 @@ app.post('/api/login', async (req, res) => {
         // In a full app, you would generate a JWT token here for SSO
         res.json({ message: "Login successful", user: { id: user.rows[0].id, username: user.rows[0].username } });
     } catch (err) {
-        console.error(err.message);
+        console.error("LOGIN ERROR:", err.message);
         res.status(500).json({ error: "Server error" });
     }
 });
@@ -67,7 +67,7 @@ app.post('/api/login', async (req, res) => {
 // 3. Get all drivers (For the app dashboard)
 app.get('/api/drivers', async (req, res) => {
     try {
-        const allDrivers = await pool.query("SELECT * FROM Drivers");
+        const allDrivers = await pool.query('SELECT * FROM "Drivers"');
         res.json(allDrivers.rows);
     } catch (err) {
         console.error(err.message);
@@ -78,7 +78,7 @@ app.get('/api/drivers', async (req, res) => {
 // 4. Get all vehicles
 app.get('/api/vehicles', async (req, res) => {
     try {
-        const allVehicles = await pool.query("SELECT * FROM Vehicles");
+        const allVehicles = await pool.query('SELECT * FROM "Vehicles"');
         res.json(allVehicles.rows);
     } catch (err) {
         console.error(err.message);
@@ -91,7 +91,7 @@ app.post('/api/trips', async (req, res) => {
     try {
         const { vehicle_id, driver_id, origin, destination, departure_date } = req.body;
         const newTrip = await pool.query(
-            "INSERT INTO Trips (vehicle_id, driver_id, origin, destination, departure_date) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            'INSERT INTO "Trips" (vehicle_id, driver_id, origin, destination, departure_date) VALUES ($1, $2, $3, $4, $5) RETURNING *',
             [vehicle_id, driver_id, origin, destination, departure_date]
         );
         res.json({ message: "Trip created", trip: newTrip.rows[0] });
